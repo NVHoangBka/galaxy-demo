@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Website Lovely - nơi chia sẻ tình yêu thương.">
+  <title>Galaxy love 2.0</title>
+  <link rel="icon" href="./assets/icon1.png" type="image/png">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.module.js",
+      "three/addons/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js"
+    }
+  }
+</script>
+</head>
+<body>
+  <div id="container">
+    <!-- Form thêm link ảnh -->
+    <div id="image-form-container">
+      <button id="toggle-form-btn">Thêm ảnh</button>
+      <form id="image-form">
+        <input type="text" id="image-url" placeholder="Nhập link ảnh thiên hà (JPG/PNG)" />
+        <button type="submit">Thêm</button>
+        <div id="error-message"></div>
+        <ul id="image-list"></ul>
+      </form>
+    </div>
+    <!-- Nút bật/tắt âm thanh -->
+    <button id="toggle-audio" class="btn-audio-toggle">
+      <i id="audio-icon" class="fa-solid fa-volume-xmark"></i>
+    </button>
+
+    <!-- Cảnh báo xoay ngang màn hình -->
+    <div id="landscape-warning">
+      <div class="warning-content">
+        <div class="rotate-icon"></div>
+        <h1>Love</h1>
+        <h1>Tinh Cầu</h1>
+        <p>Cậu hãy xoay ngang màn hình nha!</p>
+        <p>Nhớ chạm vào tinh cầu ở giữa để mở quà bí mật nha.</p>
+        <div class="stars-bg"></div>
+      </div>
+    </div>
+
+    <!-- Overlay khi mở quà -->
+    <div id="dark-overlay"></div>
+    <div id="info"></div>
+
+  </div>
+  
+
+  <script type="module" src="./assets/galaxy.js"></script>
+</body>
+</html>
