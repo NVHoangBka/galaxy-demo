@@ -1,6 +1,9 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
+
+let audio = null; // Biến lưu trữ đối tượng âm thanh
+
 // Khởi tạo scene, camera và renderer
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0x000000, 0.0015);
@@ -56,7 +59,7 @@ scene.add(centralGlow);
 
 // Tham số thiên hà
 let galaxyParameters = {
-    count: 200000,
+    count: window.innerWidth < 768 ? 50000 : 100000,
     arms: 8,
     radius: 600,
     spin: 0.5,
@@ -167,8 +170,8 @@ function createPointClouds() {
     heartPointClouds = [];
 
     const numGroups = heartImages.length || 1;
-    const maxDensity = 15000;
-    const minDensity = 4000;
+    const maxDensity = window.innerWidth < 768 ? 5000 : 10000;
+    const minDensity = 2000;
     const maxGroupsForScale = 6;
     let pointsPerGroup;
     if (numGroups <= 1) {
@@ -312,52 +315,100 @@ function createPointClouds() {
     }
 }
 
-// Xử lý form
+// --- Xử lý form ảnh và âm thanh ---
 const imageForm = document.getElementById('image-form');
 const imageUrlInput = document.getElementById('image-url');
 const imageList = document.getElementById('image-list');
 const errorMessage = document.getElementById('error-message');
 const toggleFormBtn = document.getElementById('toggle-form-btn');
+const musicUrlInput = document.getElementById('music-url');
+const addMusicBtn = document.getElementById('add-music-btn');
+const toggleAudioBtn = document.getElementById('toggle-audio');
+const audioIcon = document.getElementById('audio-icon');
 
 if (toggleFormBtn) {
-    toggleFormBtn.addEventListener('click', () => {
-        imageForm.style.display = imageForm.style.display === 'none' ? 'block' : 'none';
-    });
+  toggleFormBtn.addEventListener('click', () => {
+    imageForm.style.display = imageForm.style.display === 'none' ? 'block' : 'none';
+  });
 }
 
 if (imageForm) {
-    imageForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const url = imageUrlInput.value.trim();
-        if (!url) {
-            errorMessage.textContent = 'Vui lòng nhập URL ảnh!';
-            return;
-        }
-        if (!url.match(/\.(jpg|jpeg|png)$/i)) {
-            errorMessage.textContent = 'Chỉ hỗ trợ định dạng JPG hoặc PNG!';
-            return;
-        }
-        errorMessage.textContent = '';
-        heartImages.push(url);
-        imageUrlInput.value = '';
+  imageForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+  });
 
-        const li = document.createElement('li');
-        li.textContent = url;
-        imageList.appendChild(li);
+  document.getElementById('add-img-btn').addEventListener('click', () => {
+    const url = imageUrlInput.value.trim();
+    if (!url) {
+      errorMessage.textContent = 'Vui lòng nhập URL ảnh!';
+      return;
+    }
+    if (!url.match(/\.(jpg|jpeg|png)$/i)) {
+      errorMessage.textContent = 'Chỉ hỗ trợ định dạng JPG hoặc PNG!';
+      return;
+    }
+    errorMessage.textContent = '';
+    heartImages.push(url);
+    imageUrlInput.value = '';
 
-        createPointClouds();
+    const li = document.createElement('li');
+    const img = document.createElement('img');
+    img.src = url;
+    img.style.width = '50px';
+    img.style.height = '50px';
+    li.appendChild(img);
+    const deleteBtn = document.createElement('button');
+    deleteBtn.textContent = 'X';
+    deleteBtn.addEventListener('click', () => {
+      heartImages.splice(heartImages.indexOf(url), 1);
+      li.remove();
+      createPointClouds();
     });
+    li.appendChild(deleteBtn);
+    imageList.appendChild(li);
+
+    createPointClouds();
+  });
 }
 
-// Khởi tạo point clouds
-createPointClouds();
+if (addMusicBtn && musicUrlInput) {
+  addMusicBtn.addEventListener('click', () => {
+    const url = musicUrlInput.value.trim();
+    if (!url.match(/\.mp3$/i)) {
+      document.getElementById('error-message').textContent = 'Vui lòng nhập URL MP3 hợp lệ!';
+      return;
+    }
+    audio = new Audio(url);
+    audio.loop = true; // Lặp lại nhạc
+    document.getElementById('error-message').textContent = '';
+    musicUrlInput.value = '';
+  });
+}
+
+if (toggleAudioBtn) {
+  toggleAudioBtn.addEventListener('click', () => {
+    if (audio) {
+      if (audio.paused) {
+        audio.play();
+        audioIcon.classList.replace('fa-volume-xmark', 'fa-volume-high');
+      } else {
+        audio.pause();
+        audioIcon.classList.replace('fa-volume-high', 'fa-volume-xmark');
+      }
+    } else {
+      document.getElementById('error-message').textContent = 'Chưa có nhạc được thêm!';
+    }
+  });
+}
+
+
 
 // Ambient light
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
 scene.add(ambientLight);
 
 // Starfield
-const starCount = 20000;
+const starCount = window.innerWidth < 768 ? 5000 : 10000;
 const starGeometry = new THREE.BufferGeometry();
 const starPositions = new Float32Array(starCount * 3);
 for (let i = 0; i < starCount; i++) {
@@ -1158,6 +1209,7 @@ function onCanvasClick(event) {
         startCameraAnimation();
         starField.geometry.setDrawRange(0, originalStarCount);
         createGalaxy();
+        if (audio) audio.play();
     } else if (introStarted) {
         const heartIntersects = raycaster.intersectObjects(heartPointClouds);
         if (heartIntersects.length > 0) {

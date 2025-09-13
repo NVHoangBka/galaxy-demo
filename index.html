@@ -16,20 +16,35 @@
       "three/addons/controls/OrbitControls.js": "https://cdn.jsdelivr.net/npm/three@0.152.2/examples/jsm/controls/OrbitControls.js"
     }
   }
-</script>
+  </script>
 </head>
 <body>
-  <div id="container">
-    <!-- Form thêm link ảnh -->
-    <div id="image-form-container">
-      <button id="toggle-form-btn">Thêm ảnh</button>
-      <form id="image-form">
-        <input type="text" id="image-url" placeholder="Nhập link ảnh thiên hà (JPG/PNG)" />
-        <button type="submit">Thêm</button>
-        <div id="error-message"></div>
-        <ul id="image-list"></ul>
-      </form>
-    </div>
+
+   <!-- Màn hình setup (chỉ hiển thị đầu tiên) --> 
+  <div id="setup-screen"> 
+    <h2>Chuẩn bị cho Galaxy Love</h2> 
+    <!-- <button id="toggle-form-btn"></button> -->
+    <form class="form-container" id="image-form">
+        <!-- Form thêm ảnh --> 
+        <div id="image-form-container"> 
+          <input type="text" id="image-url" placeholder="Nhập link ảnh thiên hà (JPG/PNG)" /> 
+          <button type="button" id="add-img-btn">Thêm</button> 
+          <div id="error-message"></div> 
+          <ul id="image-list"></ul>
+        </div> 
+        <!-- Form thêm nhạc --> 
+        <div id="music-form-container"> 
+          <input type="text" id="music-url" placeholder="Nhập link nhạc (MP3)" /> 
+          <button type="button" id="add-music-btn">Thêm</button> 
+          <div id="error-message"></div> 
+        </div>
+        <button type="button" id="ok-btn">OK</button> 
+    </form> 
+  </div>
+
+
+  <!-- Giao diện cavar (ẩn mặc định) -->
+  <div id="container" style="display: none;">
     <!-- Nút bật/tắt âm thanh -->
     <button id="toggle-audio" class="btn-audio-toggle">
       <i id="audio-icon" class="fa-solid fa-volume-xmark"></i>
@@ -50,9 +65,15 @@
     <!-- Overlay khi mở quà -->
     <div id="dark-overlay"></div>
     <div id="info"></div>
-
   </div>
-  
+
+  <script type="module">
+    // Xử lý khi ấn OK
+    document.getElementById("ok-btn").addEventListener("click", () => {
+      document.getElementById("setup-screen").style.display = "none";
+      document.getElementById("container").style.display = "block";
+    });
+  </script>
 
   <script type="module" src="./assets/galaxy.js"></script>
 </body>
