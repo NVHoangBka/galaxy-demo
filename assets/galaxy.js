@@ -59,7 +59,7 @@ scene.add(centralGlow);
 
 // Tham số thiên hà
 let galaxyParameters = {
-    count: window.innerWidth < 768 ? 50000 : 100000,
+    count: window.innerWidth < 768 ? 50000 : 200000,
     arms: 8,
     radius: 600,
     spin: 0.5,
@@ -165,13 +165,21 @@ function createFallbackTexture() {
 
 // Tạo point clouds từ ảnh
 function createPointClouds() {
+    if (heartImages.length === 0) {
+        heartImages = [
+            'https://media-cdn-v2.laodong.vn/storage/newsportal/2025/9/10/1572399/Messi-2.jpeg',
+            'https://upload.wikimedia.org/wikipedia/vi/thumb/9/91/FC_Barcelona_logo.svg/2020px-FC_Barcelona_logo.svg.png'
+        ];
+        console.log('Không có ảnh nào được cung cấp, sử dụng ảnh mặc định:', heartImages);
+    }
+
     // Xóa cũ
     heartPointClouds.forEach(cloud => scene.remove(cloud));
     heartPointClouds = [];
 
     const numGroups = heartImages.length || 1;
-    const maxDensity = window.innerWidth < 768 ? 5000 : 10000;
-    const minDensity = 2000;
+    const maxDensity = window.innerWidth < 768 ? 5000 : 20000;
+    const minDensity = 4000;
     const maxGroupsForScale = 6;
     let pointsPerGroup;
     if (numGroups <= 1) {
@@ -408,7 +416,7 @@ const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
 scene.add(ambientLight);
 
 // Starfield
-const starCount = window.innerWidth < 768 ? 5000 : 10000;
+const starCount = window.innerWidth < 768 ? 5000 : 20000;
 const starGeometry = new THREE.BufferGeometry();
 const starPositions = new Float32Array(starCount * 3);
 for (let i = 0; i < starCount; i++) {
@@ -1046,6 +1054,10 @@ function createGalaxy() {
     galaxy = new THREE.Points(galaxyGeometry, galaxyMaterial);
     scene.add(galaxy);
 }
+
+// Khởi tạo heartImages và tạo các đám mây điểm
+heartImages = getHeartImagesFromURL();
+createPointClouds();
 
 // Animation loop
 function animate() {
