@@ -1,8 +1,8 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
-
-let audio = null; // Biến lưu trữ đối tượng âm thanh
+let audio = null;
+let allImagesLoaded = false;
 
 // Khởi tạo scene, camera và renderer
 const scene = new THREE.Scene();
@@ -93,7 +93,33 @@ function getHeartImagesFromURL() {
         const decoded = decodeBase64Unicode(id);
         return decoded.split(',').map(url => url.trim()).filter(Boolean);
     }
-    return [];
+    return [
+        './assets/image/att.23Fj-zvoa_dUvrjezIWzqn9OUWxZE5JjUYKwfvFew90.jpg',
+        './assets/image/att.GyMuWTJngW6qTHSdSXlASpNbimSv4hkjEzhUimlkEHc.jpg',
+        './assets/image/att.lM_8Nt8_8sZY0NTtGjzUsMMGB64ZDBwMNgLyk-24bgk.jpg',
+        './assets/image/att.mSkkU3juKwg-KgzzLIiwkjaCGdsrbrLQnSv_NdOiFio.jpg',
+        './assets/image/att.w2FtmV4QsYYx-kLXXfTi3uzdVmyWF8NUu6i42lPP5Uc.jpg',
+        './assets/image/IMG_0076.JPG',
+        './assets/image/IMG_0100.JPG',
+        './assets/image/IMG_0101.JPG',
+        './assets/image/IMG_0103.JPG',
+        './assets/image/IMG_0175.JPG',
+        './assets/image/IMG_0176.JPG',
+        './assets/image/IMG_0191.JPG',
+        './assets/image/IMG_0192.JPG',
+        './assets/image/IMG_0193.JPG',
+        './assets/image/IMG_0194.JPG',
+        './assets/image/IMG_0195.JPG',
+        './assets/image/IMG_0196.JPG',
+        './assets/image/IMG_0197.JPG',
+        './assets/image/IMG_0198.JPG',
+        './assets/image/IMG_0199.JPG',
+        './assets/image/IMG_0200.JPG',
+        './assets/image/IMG_0201.JPG',
+        './assets/image/IMG_0202.JPG',
+        './assets/image/IMG_0203.JPG',
+        './assets/image/IMG_0204.JPG',
+    ];
 }
 
 // Quản lý danh sách ảnh
@@ -163,12 +189,35 @@ function createFallbackTexture() {
     return createNeonTexture(canvas, 256);
 }
 
-// Tạo point clouds từ ảnh
+// Tạo point clouds từ ảnh với kiểm tra tải
 function createPointClouds() {
     if (heartImages.length === 0) {
         heartImages = [
-            'https://media-cdn-v2.laodong.vn/storage/newsportal/2025/9/10/1572399/Messi-2.jpeg',
-            'https://upload.wikimedia.org/wikipedia/vi/thumb/9/91/FC_Barcelona_logo.svg/2020px-FC_Barcelona_logo.svg.png'
+            './assets/image/att.23Fj-zvoa_dUvrjezIWzqn9OUWxZE5JjUYKwfvFew90.jpg',
+            './assets/image/att.GyMuWTJngW6qTHSdSXlASpNbimSv4hkjEzhUimlkEHc.jpg',
+            './assets/image/att.lM_8Nt8_8sZY0NTtGjzUsMMGB64ZDBwMNgLyk-24bgk.jpg',
+            './assets/image/att.mSkkU3juKwg-KgzzLIiwkjaCGdsrbrLQnSv_NdOiFio.jpg',
+            './assets/image/att.w2FtmV4QsYYx-kLXXfTi3uzdVmyWF8NUu6i42lPP5Uc.jpg',
+            './assets/image/IMG_0076.JPG',
+            './assets/image/IMG_0100.JPG',
+            './assets/image/IMG_0101.JPG',
+            './assets/image/IMG_0103.JPG',
+            './assets/image/IMG_0175.JPG',
+            './assets/image/IMG_0176.JPG',
+            './assets/image/IMG_0191.JPG',
+            './assets/image/IMG_0192.JPG',
+            './assets/image/IMG_0193.JPG',
+            './assets/image/IMG_0194.JPG',
+            './assets/image/IMG_0195.JPG',
+            './assets/image/IMG_0196.JPG',
+            './assets/image/IMG_0197.JPG',
+            './assets/image/IMG_0198.JPG',
+            './assets/image/IMG_0199.JPG',
+            './assets/image/IMG_0200.JPG',
+            './assets/image/IMG_0201.JPG',
+            './assets/image/IMG_0202.JPG',
+            './assets/image/IMG_0203.JPG',
+            './assets/image/IMG_0204.JPG',
         ];
         console.log('Không có ảnh nào được cung cấp, sử dụng ảnh mặc định:', heartImages);
     }
@@ -196,6 +245,7 @@ function createPointClouds() {
 
     console.log(`Số lượng ảnh thiên hà: ${numGroups}, Điểm mỗi ảnh: ${pointsPerGroup}`);
 
+    const loadPromises = [];
     for (let group = 0; group < numGroups; group++) {
         const groupPositions = new Float32Array(pointsPerGroup * 3);
         const groupColorsNear = new Float32Array(pointsPerGroup * 3);
@@ -256,71 +306,82 @@ function createPointClouds() {
         groupGeometryNear.translate(-cx, -cy, -cz);
         groupGeometryFar.translate(-cx, -cy, -cz);
 
-        const img = new Image();
-        img.crossOrigin = 'Anonymous';
-        img.src = heartImages[group] || '';
-        img.onload = () => {
-            const texture = createNeonTexture(img, 256);
-            const materialNear = new THREE.PointsMaterial({
-                size: 2.0,
-                map: texture,
-                transparent: false,
-                alphaTest: 0.2,
-                depthWrite: true,
-                depthTest: true,
-                blending: THREE.NormalBlending,
-                vertexColors: true
-            });
-            const materialFar = new THREE.PointsMaterial({
-                size: 2.0,
-                map: texture,
-                transparent: true,
-                alphaTest: 0.2,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending,
-                vertexColors: true
-            });
-            const points = new THREE.Points(groupGeometryFar, materialFar);
-            points.position.set(cx, cy, cz);
-            points.userData.materialNear = materialNear;
-            points.userData.materialFar = materialFar;
-            points.userData.geometryNear = groupGeometryNear;
-            points.userData.geometryFar = groupGeometryFar;
-            scene.add(points);
-            heartPointClouds.push(points);
-        };
-        img.onerror = () => {
-            console.error(`Không thể tải ảnh thiên hà: ${heartImages[group] || 'Không có URL'}`);
-            const texture = createFallbackTexture();
-            const materialNear = new THREE.PointsMaterial({
-                size: 2.0,
-                map: texture,
-                transparent: false,
-                alphaTest: 0.2,
-                depthWrite: true,
-                depthTest: true,
-                blending: THREE.NormalBlending,
-                vertexColors: true
-            });
-            const materialFar = new THREE.PointsMaterial({
-                size: 2.0,
-                map: texture,
-                transparent: true,
-                alphaTest: 0.2,
-                depthWrite: false,
-                blending: THREE.AdditiveBlending,
-                vertexColors: true
-            });
-            const points = new THREE.Points(groupGeometryFar, materialFar);
-            points.position.set(cx, cy, cz);
-            points.userData.materialNear = materialNear;
-            points.userData.materialFar = materialFar;
-            points.userData.geometryNear = groupGeometryNear;
-            points.userData.geometryFar = groupGeometryFar;
-            scene.add(points);
-            heartPointClouds.push(points);
-        };
+        const loadPromise = new Promise((resolve) => {
+            const img = new Image();
+            img.crossOrigin = 'Anonymous';
+            img.src = heartImages[group] || '';
+            img.onload = () => {
+                const texture = createNeonTexture(img, 256);
+                const materialNear = new THREE.PointsMaterial({
+                    size: 2.0,
+                    map: texture,
+                    transparent: false,
+                    alphaTest: 0.2,
+                    depthWrite: true,
+                    depthTest: true,
+                    blending: THREE.NormalBlending,
+                    vertexColors: true
+                });
+                const materialFar = new THREE.PointsMaterial({
+                    size: 2.0,
+                    map: texture,
+                    transparent: true,
+                    alphaTest: 0.2,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending,
+                    vertexColors: true
+                });
+                const points = new THREE.Points(groupGeometryFar, materialFar);
+                points.position.set(cx, cy, cz);
+                points.userData.materialNear = materialNear;
+                points.userData.materialFar = materialFar;
+                points.userData.geometryNear = groupGeometryNear;
+                points.userData.geometryFar = groupGeometryFar;
+                scene.add(points);
+                heartPointClouds.push(points);
+                resolve();
+            };
+            img.onerror = () => {
+                console.error(`Không thể tải ảnh thiên hà: ${heartImages[group] || 'Không có URL'}`);
+                const texture = createFallbackTexture();
+                const materialNear = new THREE.PointsMaterial({
+                    size: 2.0,
+                    map: texture,
+                    transparent: false,
+                    alphaTest: 0.2,
+                    depthWrite: true,
+                    depthTest: true,
+                    blending: THREE.NormalBlending,
+                    vertexColors: true
+                });
+                const materialFar = new THREE.PointsMaterial({
+                    size: 2.0,
+                    map: texture,
+                    transparent: true,
+                    alphaTest: 0.2,
+                    depthWrite: false,
+                    blending: THREE.AdditiveBlending,
+                    vertexColors: true
+                });
+                const points = new THREE.Points(groupGeometryFar, materialFar);
+                points.position.set(cx, cy, cz);
+                points.userData.materialNear = materialNear;
+                points.userData.materialFar = materialFar;
+                points.userData.geometryNear = groupGeometryNear;
+                points.userData.geometryFar = groupGeometryFar;
+                scene.add(points);
+                heartPointClouds.push(points);
+                resolve();
+            };
+        });
+        loadPromises.push(loadPromise);
     }
+
+    // Đánh dấu tất cả ảnh đã tải khi tất cả promise hoàn thành
+    Promise.all(loadPromises).then(() => {
+        allImagesLoaded = true;
+        console.log('Tất cả ảnh đã được tải xong.');
+    });
 }
 
 // --- Xử lý form ảnh và âm thanh ---
@@ -387,7 +448,7 @@ if (addMusicBtn && musicUrlInput) {
       return;
     }
     audio = new Audio(url);
-    audio.loop = true; // Lặp lại nhạc
+    audio.loop = true;
     document.getElementById('error-message').textContent = '';
     musicUrlInput.value = '';
   });
@@ -408,8 +469,6 @@ if (toggleAudioBtn) {
     }
   });
 }
-
-
 
 // Ambient light
 const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
@@ -634,7 +693,7 @@ planet.position.set(0, 0, 0);
 scene.add(planet);
 
 // Text rings
-const ringTexts = ['LOVE LOVE LOVE LOVE LOVE LOVE LOVE LOVE LOVE LOVE LOVE', ...(window.dataLove2Loveloom?.ringTexts || [])];
+const ringTexts = ['LOVE LOVE LOVE LOVE LOVE LOVE LOVE LOVE LOVE LOVE', ...(window.dataLove2Loveloom?.ringTexts || [])];
 
 function createTextRings() {
     const numRings = ringTexts.length;
@@ -927,10 +986,121 @@ function createHintText() {
     scene.add(hintText);
 }
 
+// Thêm lời chúc với hiệu ứng viết tay, mỗi chữ xuống dòng, và backglow
+let wishPlane = null;
+const wishText = "Chúc bạn Hà Phương yêu mãi hạnh phúc!";
+let currentLine = 0;
+function createWishPlane() {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 256;
+    canvas.
+    const context = canvas.getContext('2d');
+    context.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    context.font = 'bold 30px Dancing Script, Arial'; // Giảm kích thước font để vừa với nhiều dòng
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+
+    // Thiết lập backglow
+    context.shadowColor = '#ff66ff'; // Màu backglow mới (hồng đậm)
+    context.shadowBlur = 20; // Tăng độ mờ để tạo hiệu ứng phát sáng
+    context.fillText(wishText, canvas.width / 2, canvas.height / 2); // Vẽ backglow trước
+
+    // Thêm lớp shadow hiện tại để tạo độ sâu
+    context.shadowColor = '#e0b3ff'; // Giữ màu tím nhạt làm lớp thứ hai
+    context.shadowBlur = 10;
+    context.fillText(wishText, canvas.width / 2, canvas.height / 2); // Vẽ lớp thứ hai
+
+    // Vẽ chữ chính (không shadow)
+    context.shadowColor = 'transparent';
+    context.shadowBlur = 0;
+    context.fillStyle = 'white';
+    context.fillText(wishText, canvas.width / 2, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.needsUpdate = true;
+    const material = new THREE.MeshBasicMaterial({ map: texture, transparent: true });
+    const geometry = new THREE.PlaneGeometry(50, 25);
+    wishPlane = new THREE.Mesh(geometry, material);
+    wishPlane.position.set(0, 20, -50);
+    wishPlane.rotation.y = Math.PI;
+    wishPlane.visible = false;
+    scene.add(wishPlane);
+
+    // Hàm vẽ từng chữ trên dòng mới
+    function drawTextStep(index) {
+        if (index < wishText.length) {
+            const words = wishText.split(' ');
+            let charIndex = 0;
+            let wordIndex = 0;
+
+            for (let i = 0; i < index; i++) {
+                if (wishText[i] === ' ') {
+                    charIndex++;
+                } else {
+                    charIndex++;
+                    if (charIndex >= words[wordIndex].length) {
+                        charIndex = 0;
+                        wordIndex++;
+                    }
+                }
+            }
+
+            const currentWord = words[wordIndex];
+            let textSoFar = '';
+            for (let i = 0; i <= wordIndex; i++) {
+                if (i < wordIndex) {
+                    textSoFar += words[i] + ' ';
+                } else {
+                    textSoFar += currentWord.slice(0, charIndex + 1);
+                }
+            }
+
+            context.clearRect(0, 0, canvas.width, canvas.height);
+            const lines = textSoFar.split(' ');
+            const lineHeight = 40; // Khoảng cách giữa các dòng
+            lines.forEach((line, idx) => {
+                if (line) {
+                    // Vẽ backglow
+                    context.shadowColor = '#ff66ff';
+                    context.shadowBlur = 20;
+                    context.fillText(line, canvas.width / 2, canvas.height / 2 - (lines.length - 1) * lineHeight / 2 + idx * lineHeight);
+
+                    // Vẽ lớp shadow thứ hai
+                    context.shadowColor = '#e0b3ff';
+                    context.shadowBlur = 10;
+                    context.fillText(line, canvas.width / 2, canvas.height / 2 - (lines.length - 1) * lineHeight / 2 + idx * lineHeight);
+
+                    // Vẽ chữ chính
+                    context.shadowColor = 'transparent';
+                    context.shadowBlur = 0;
+                    context.fillStyle = 'white';
+                    context.fillText(line, canvas.width / 2, canvas.height / 2 - (lines.length - 1) * lineHeight / 2 + idx * lineHeight);
+                }
+            });
+            texture.needsUpdate = true;
+
+            setTimeout(() => drawTextStep(index + 1), 300); // Độ trễ 300ms giữa các ký tự
+        } else {
+            wishPlane.visible = true; // Hiển thị hoàn toàn khi xong
+        }
+    }
+
+    // Bắt đầu hiệu ứng viết tay khi cần
+    window.startHandwriting = () => {
+        if (wishPlane && !wishPlane.visible) {
+            wishPlane.visible = true;
+            currentLine = 0;
+            drawTextStep(0);
+        }
+    };
+}
+
 // Khởi tạo
 createShootingStar();
 createHintIcon();
 createHintText();
+createWishPlane();
 
 // Resize
 function handleResize() {
@@ -1195,6 +1365,10 @@ function animate() {
         starField.material.transparent = false;
     }
 
+    if (wishPlane) {
+        wishPlane.lookAt(camera.position); // Luôn hướng về camera
+    }
+
     renderer.render(scene, camera);
 }
 
@@ -1222,6 +1396,11 @@ function onCanvasClick(event) {
         starField.geometry.setDrawRange(0, originalStarCount);
         createGalaxy();
         if (audio) audio.play();
+
+        // Kích hoạt hiệu ứng viết tay nếu ảnh đã tải xong
+        if (allImagesLoaded) {
+            window.startHandwriting();
+        }
     } else if (introStarted) {
         const heartIntersects = raycaster.intersectObjects(heartPointClouds);
         if (heartIntersects.length > 0) {
