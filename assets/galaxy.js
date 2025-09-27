@@ -994,7 +994,6 @@ function createWishPlane() {
     const canvas = document.createElement('canvas');
     canvas.width = 512;
     canvas.height = 256;
-    canvas.
     const context = canvas.getContext('2d');
     context.fillStyle = 'rgba(255, 255, 255, 0.9)';
     context.font = 'bold 30px Dancing Script, Arial'; // Giảm kích thước font để vừa với nhiều dòng
